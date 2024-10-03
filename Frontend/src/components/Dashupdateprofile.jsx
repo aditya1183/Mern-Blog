@@ -1,0 +1,295 @@
+import React, { useEffect, useRef, useState } from "react";
+import { Alert, Button, Modal, ModalBody, TextInput } from "flowbite-react";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { useSelector, useDispatch } from "react-redux";
+import { CircularProgressbar } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
+import {
+  updateStart,
+  updateSuccess,
+  updateFailure,
+  signoutSuccess,
+  deleteUserStart,
+  deleteUserSuccess,
+  deleteUserFailure,
+} from "../redux/user/userSlice";
+
+import { Link } from "react-router-dom";
+
+function Dashupdateprofile() {
+  const { currentUser, error, loading } = useSelector((state) => state.user);
+  const [imageFile, setImageFile] = useState(null);
+  const [imageFileUrl, setImageFileUrl] = useState(
+    currentUser.profilePicture || null
+  );
+  const [imageFileUploadProgress, setImageFileUploadProgress] = useState(null);
+  const [imageFileUploading, setImageFileUploading] = useState(false);
+  const [updateUserError, setUpdateUserError] = useState(null);
+  const [updateUserSuccess, setUpdateUserSuccess] = useState(null);
+
+  const [showModal, setShowModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [formData, setFormData] = useState({
+    firstname: currentUser.firstname || "",
+    lastname: currentUser.lastname || "",
+    username: currentUser.username || "",
+    email: currentUser.email || "",
+    phone: currentUser.phone,
+  });
+  const handleSignout = async () => {
+    try {
+      const res = await fetch("/api/user/signout", {
+        method: "POST",
+      });
+      const data = await res.json();
+      console.log(data);
+      if (!res.ok) {
+        console.log(data.message);
+      } else {
+        dispatch(signoutSuccess());
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+  // const handleDeleteUser = async () => {
+  //   setShowModal(false);
+  //   try {
+  //     dispatch(deleteUserStart());
+  //     const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+  //       method: "DELETE",
+  //     });
+  //     const data = await res.json();
+  //     if (!res.ok) {
+  //       dispatch(deleteUserFailure(data.message));
+  //     } else {
+  //       dispatch(deleteUserSuccess(data));
+  //     }
+  //   } catch (error) {
+  //     dispatch(deleteUserFailure(error.message));
+  //   }
+  // };
+  const filePickerRef = useRef();
+  const dispatch = useDispatch();
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImageFileUrl(URL.createObjectURL(file));
+    }
+  };
+
+  useEffect(() => {
+    if (imageFile) {
+      uploadImage();
+    }
+  }, [imageFile]);
+
+  const uploadImage = async () => {
+    setImageFileUploading(true);
+    const storage = getStorage();
+    const fileName = new Date().getTime() + imageFile.name;
+    const storageRef = ref(storage, fileName);
+    const uploadTask = uploadBytesResumable(storageRef, imageFile);
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setImageFileUploadProgress(progress.toFixed(0));
+      },
+      (error) => {
+        setUpdateUserError(
+          "Could not upload image (File must be less than 2MB)"
+        );
+        setImageFileUploading(false);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          setImageFileUrl(downloadURL);
+          setFormData({ ...formData, profilePicture: downloadURL });
+          setImageFileUploading(false);
+        });
+      }
+    );
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (imageFileUploading) {
+      setUpdateUserError("Please wait for image to upload");
+      return;
+    }
+    try {
+      dispatch(updateStart());
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      console.log(formData);
+      const data = await res.json();
+      if (!res.ok) {
+        dispatch(updateFailure(data.message));
+        setUpdateUserError(data.message);
+      } else {
+        dispatch(updateSuccess(data));
+        setUpdateUserError("User's profile updated successfully");
+      }
+    } catch (error) {
+      dispatch(updateFailure(error.message));
+      setUpdateUserError(error.message);
+    }
+  };
+
+  return (
+    <div className="max-w-lg mx-auto p-3 w-full">
+      <h1 className="my-7 text-center font-semibold text-3xl">
+        Profile Update
+      </h1>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* Image Section */}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          ref={filePickerRef}
+          hidden
+        />
+        <div
+          className="relative w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full"
+          onClick={() => filePickerRef.current.click()}
+        >
+          {imageFileUploadProgress && (
+            <CircularProgressbar
+              value={imageFileUploadProgress || 0}
+              text={`${imageFileUploadProgress}%`}
+              strokeWidth={5}
+              styles={{
+                root: {
+                  width: "100%",
+                  height: "100%",
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                },
+                path: {
+                  stroke: `rgba(62, 152, 199, ${
+                    imageFileUploadProgress / 100
+                  })`,
+                },
+              }}
+            />
+          )}
+          <img
+            src={imageFileUrl || currentUser.profilePicture}
+            alt="user"
+            className={`rounded-full w-full h-full object-cover border-8 border-[lightgray] ${
+              imageFileUploadProgress &&
+              imageFileUploadProgress < 100 &&
+              "opacity-60"
+            }`}
+          />
+        </div>
+
+        {/* Form Fields using TextInput */}
+
+        <label>First Name: </label>
+        <TextInput
+          id="firstname"
+          value={formData.firstname}
+          onChange={handleChange}
+        />
+
+        <label>Last Name: </label>
+        <TextInput
+          id="lastname"
+          value={formData.lastname}
+          onChange={handleChange}
+        />
+
+        <label>Username (Read-Only): </label>
+        <TextInput id="username" value={formData.username} readOnly />
+
+        <label>Email (Read-Only): </label>
+        <TextInput type="text" id="email" value={formData.email} readOnly />
+
+        <label>Phone No: </label>
+        <TextInput id="phone" value={formData.phone} onChange={handleChange} />
+
+        <Button gradientDuoTone="purpleToBlue" outline onClick={handleSubmit}>
+          {loading ? "Loading..." : "Update"}
+        </Button>
+      </form>
+
+      <div className="text-red-500 flex justify-between mt-5">
+        <span onClick={() => setShowModal(true)} className="cursor-pointer">
+          Delete Account
+        </span>
+        <span onClick={handleSignout} className="cursor-pointer">
+          Sign Out
+        </span>
+      </div>
+      {updateUserSuccess && (
+        <Alert color="success" className="mt-5">
+          {updateUserSuccess}
+        </Alert>
+      )}
+      {updateUserError && (
+        <Alert color="failure" className="mt-5">
+          {updateUserError}
+        </Alert>
+      )}
+      {error && (
+        <Alert color="failure" className="mt-5">
+          {error}
+        </Alert>
+      )}
+      {errorMessage && (
+        <Alert className="mt-5" color="failure">
+          {errorMessage}
+        </Alert>
+      )}
+
+      <Modal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        popup
+        size="md"
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center">
+            <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
+            <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
+              Are you sure you want to delete your account?
+            </h3>
+            <div className="flex justify-center gap-4">
+              <Link to={"/dashboard?tab=verifypassword"}>
+                <Button color="failure">Yes, I'm sure</Button>
+              </Link>
+              <Button color="gray" onClick={() => setShowModal(false)}>
+                No, cancel
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
+    </div>
+  );
+}
+
+export default Dashupdateprofile;
