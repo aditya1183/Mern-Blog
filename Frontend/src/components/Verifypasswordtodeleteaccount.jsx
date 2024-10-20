@@ -190,7 +190,7 @@ function Verifypasswordtodeleteaccount() {
             width: "100%",
           }}
         >
-          {loading ? "Loading..." : "Verify Password"}
+          {loading ? "Loading..." : "Verify Passwordh"}
         </Button>
       </form>
 

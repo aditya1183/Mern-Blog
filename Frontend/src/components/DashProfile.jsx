@@ -189,6 +189,10 @@ export default function DashProfile() {
       // Handle the error (e.g., incorrect password or user not found)
       console.log(error.response?.data || "An error occurred");
       setErrorMessage("Incorrect Password");
+
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 2000);
       //alert("Incorrect password or user not found!");
     }
   };
@@ -340,7 +344,7 @@ export default function DashProfile() {
             }}
           >
             <Button gradientDuoTone="purpleToBlue" outline>
-             Update Profile
+              Update Profile
             </Button>
           </Link>
         </div>

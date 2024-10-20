@@ -15,6 +15,9 @@ import UpdatePost from "./pages/UpdatePost";
 import PostPage from "./pages/PostPage";
 import ScrollToTop from "./components/ScrollToTop";
 import Search from "./pages/Search";
+import ForgootenPassword from "./pages/ForgootenPassword";
+import ResetPassword from "./pages/ResetPassword"
+import Error from "./pages/Error";
 
 export default function App() {
   return (
@@ -37,6 +40,10 @@ export default function App() {
 
         <Route path="/projects" element={<Projects />} />
         <Route path="/post/:postSlug" element={<PostPage />} />
+        <Route path="/forgootenpassword" element={<ForgootenPassword />} />
+        <Route path="/password-reset/:id/:token" element={<ResetPassword />} />
+        <Route path="*" element={<Error />} />
+
       </Routes>
       <Footer />
     </BrowserRouter>
