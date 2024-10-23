@@ -2,6 +2,7 @@ import { Alert, Button, Label, Spinner, TextInput } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { FaEye } from "react-icons/fa";
 import {
   signInStart,
   signInSuccess,
@@ -14,6 +15,7 @@ export default function SignIn() {
   const { loading, error: errorMessage } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [showpassword, setshowpassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
@@ -86,7 +88,7 @@ export default function SignIn() {
             <div>
               <Label value="Your password" />
               <TextInput
-                type="password"
+                type={!showpassword ? "password" : "text"}
                 placeholder="**********"
                 id="password"
                 onChange={handleChange}
@@ -106,13 +108,32 @@ export default function SignIn() {
                 "Sign In"
               )}
             </Button>
+
             <div
               gradientDuoTone="purpleToPink"
               style={{
                 display: "flex",
-                justifyContent: "end",
+                justifyContent: "space-between",
               }}
             >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: ".5rem",
+                }}
+              >
+                <p>show</p>
+                <input
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  type="checkbox"
+                  checked={showpassword}
+                  onChange={() => {
+                    return setshowpassword(!showpassword);
+                  }}
+                />
+              </div>
+
               <Link to="/forgootenpassword"> Forgooten Password</Link>
             </div>
             <OAuth />

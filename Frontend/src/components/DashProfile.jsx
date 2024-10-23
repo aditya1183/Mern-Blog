@@ -151,6 +151,8 @@ export default function DashProfile() {
 
   const [isCheckboxChecked, setIsCheckboxChecked] = useState(false);
   const [isPasswordVerified, setIsPasswordVerified] = useState(false);
+  const [showcurrentpassword, setshowcurrentpassword] = useState(false);
+  const [showverifynewpassword, setshownewverifypassword] = useState(false);
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
@@ -246,20 +248,36 @@ export default function DashProfile() {
             }`}
           />
         </div>
+        <h1
+          style={{
+            fontSize: "1.2rem",
+          }}
+        >
+          UserName :{" "}
+        </h1>
 
         <TextInput
           type="text"
           id="username"
           placeholder="username"
-          defaultValue={currentUser.username}
-          onChange={handleChange}
+          Value={currentUser.username}
+          readOnly
+          // onChange={handleChange}
         />
+        <h1
+          style={{
+            fontSize: "1.2rem",
+          }}
+        >
+          Gmail :{" "}
+        </h1>
         <TextInput
           type="email"
           id="email"
           placeholder="email"
-          defaultValue={currentUser.email}
-          onChange={handleChange}
+          Value={currentUser.email}
+          // onChange={handleChange}
+          readOnly
         />
 
         <div className="flex flex-col gap-4 align-middle">
@@ -278,12 +296,29 @@ export default function DashProfile() {
           {isCheckboxChecked && (
             <>
               <TextInput
-                type="password"
+                type={!showcurrentpassword ? "password" : "text"}
                 id="password"
                 placeholder="Enter Current Password"
                 value={password}
                 onChange={handlePasswordChange}
               />
+              <div
+                style={{
+                  display: "flex",
+                  gap: "1rem",
+                  alignItems: "center",
+                }}
+              >
+                <h1>show</h1>
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  checked={showcurrentpassword}
+                  onChange={() => {
+                    return setshowcurrentpassword(!showcurrentpassword);
+                  }}
+                />
+              </div>
 
               <Button
                 type="submit"
@@ -300,12 +335,29 @@ export default function DashProfile() {
             <>
               <h1 className="text-lg">Enter New Password</h1>
               <TextInput
-                type="password"
+                type={!showverifynewpassword ? "password" : "text"}
                 id="newPassword"
                 placeholder="Enter New Password"
                 value={newPassword}
                 onChange={handleNewPasswordChange}
               />
+              <div
+                style={{
+                  display: "flex",
+                  gap: "1rem",
+                  alignItems: "center",
+                }}
+              >
+                <h1>show</h1>
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  checked={showverifynewpassword}
+                  onChange={() => {
+                    return setshownewverifypassword(!showverifynewpassword);
+                  }}
+                />
+              </div>
 
               <Button
                 type="submit"

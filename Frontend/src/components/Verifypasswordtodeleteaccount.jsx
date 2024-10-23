@@ -114,6 +114,7 @@ function Verifypasswordtodeleteaccount() {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showpassword, setshowpassword] = useState(false);
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
@@ -174,12 +175,30 @@ function Verifypasswordtodeleteaccount() {
       </h1>
       <form onSubmit={handleVerifyPassword}>
         <TextInput
-          type="password"
+          type={!showpassword ? "password" : "text"}
           id="password"
           placeholder="Enter Current Password"
           value={password}
           onChange={handlePasswordChange}
         />
+        <div
+          style={{
+            marginTop: "1rem",
+            display: "flex",
+            gap: "1rem",
+            alignItems: "center",
+          }}
+        >
+          <h1>show</h1>
+          <input
+            type="checkbox"
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+            checked={showpassword}
+            onChange={() => {
+              return setshowpassword(!showpassword);
+            }}
+          />
+        </div>
         <Button
           type="submit"
           gradientDuoTone="purpleToBlue"
@@ -190,7 +209,7 @@ function Verifypasswordtodeleteaccount() {
             width: "100%",
           }}
         >
-          {loading ? "Loading..." : "Verify Passwordh"}
+          {loading ? "Loading..." : "Verify Password"}
         </Button>
       </form>
 
